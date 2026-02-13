@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "random-coffee-bot"
+version = "0.1.0"
+description = "Telegram Random Coffee bot"
+requires-python = ">=3.12"
+dependencies = [
+  "aiogram>=3.4,<4",
+  "python-dotenv>=1.0,<2",
+  "apscheduler>=3.10,<4",
+  "croniter>=2.0,<3",
+  "portalocker>=2.8,<4",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0,<9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"

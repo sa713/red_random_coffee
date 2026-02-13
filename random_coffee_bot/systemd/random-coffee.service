@@ -1,0 +1,16 @@
+[Unit]
+Description=Random Coffee Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/random_coffee
+EnvironmentFile=/opt/random_coffee/.env
+ExecStart=/opt/random_coffee/.venv/bin/python /opt/random_coffee/src/main.py
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
