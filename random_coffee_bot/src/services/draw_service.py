@@ -8,8 +8,9 @@ import portalocker
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from bot.keyboards import ready_keyboard
 from config.settings import Settings
-from db.repositories import Repository, User
+from db.repositories import Repository
 from matching.algorithm import make_pairs
 from scheduler.cron_utils import next_draw_dt, prev_draw_dt, week_id_for_draw
 from texts.messages import NO_PAIR, PAIR_MESSAGE, READY_REMINDER
@@ -51,9 +52,7 @@ class DrawService:
         if delta > timedelta(hours=self.settings.ready_window_hours):
             return
 
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[[InlineKeyboardButton(text="Я участвую ✅", callback_data=f"ready:{round_rec.id}")]]
-        )
+        keyboard = ready_keyboard(round_rec.id)
 
         users = self.repo.list_active_users()
         for user in users:

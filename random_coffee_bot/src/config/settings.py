@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 
-@dataclass(slots=True)
+@dataclass
 class Settings:
     bot_token: str
     admin_ids: set[int]

@@ -5,8 +5,8 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from bot.context import AppContext
-from bot.keyboards import offices_keyboard, start_keyboard
-from texts.messages import NEED_USERNAME, RULES_SHORT, WELCOME
+from bot.keyboards import back_to_menu_keyboard, offices_keyboard, start_keyboard
+from texts.messages import NEED_USERNAME, WELCOME
 
 
 def build_router(ctx: AppContext) -> Router:
@@ -37,8 +37,7 @@ def build_router(ctx: AppContext) -> Router:
     async def start_rules(callback: CallbackQuery) -> None:
         if callback.message is None or callback.message.chat.type != "private":
             return
-        await callback.message.answer(RULES_SHORT)
-        await callback.message.answer(ctx.rules_text)
+        await callback.message.answer(ctx.rules_text, reply_markup=back_to_menu_keyboard())
         await callback.answer()
 
     @router.callback_query(F.data.startswith("regoffice:"))
@@ -60,7 +59,10 @@ def build_router(ctx: AppContext) -> Router:
             return
 
         ctx.repo.upsert_user(user.id, user.username, office, is_active=True)
-        await callback.message.answer(f"Готово. Ты участвуешь от офиса {office}.")
+        await callback.message.answer(
+            f"Готово. Ты участвуешь от офиса {office}.",
+            reply_markup=back_to_menu_keyboard(),
+        )
         await callback.answer()
 
     return router

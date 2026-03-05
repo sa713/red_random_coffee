@@ -32,7 +32,10 @@ def build_google_calendar_url(
         now = datetime.now(tz)
         start = _next_weekday_noon(now)
         end = start + timedelta(minutes=30)
-        data["dates"] = f"{start.strftime('%Y%m%dT%H%M%S')}/{end.strftime('%Y%m%dT%H%M%S')}"
+        start_utc = start.astimezone(ZoneInfo("UTC"))
+        end_utc = end.astimezone(ZoneInfo("UTC"))
+        data["dates"] = f"{start_utc.strftime('%Y%m%dT%H%M%SZ')}/{end_utc.strftime('%Y%m%dT%H%M%SZ')}"
         data["ctz"] = str(tz)
 
-    return "https://calendar.google.com/calendar/render?" + urlencode(data)
+    # web-ссылка через HTTPS открывается и на Android, и на iOS (в браузере/приложении).
+    return "https://www.google.com/calendar/render?" + urlencode(data)

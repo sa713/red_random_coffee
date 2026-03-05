@@ -7,7 +7,7 @@ from db.repositories import Repository
 from services.draw_service import DrawService
 
 
-@dataclass(slots=True)
+@dataclass
 class AppContext:
     settings: Settings
     repo: Repository

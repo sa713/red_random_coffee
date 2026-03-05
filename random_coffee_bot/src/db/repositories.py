@@ -7,7 +7,7 @@ from typing import Iterable
 from db.connection import Database
 
 
-@dataclass(slots=True)
+@dataclass
 class User:
     user_id: int
     username: str
@@ -15,7 +15,7 @@ class User:
     is_active: bool
 
 
-@dataclass(slots=True)
+@dataclass
 class RoundRecord:
     id: int
     week_id: str

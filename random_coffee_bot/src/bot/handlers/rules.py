@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.context import AppContext
+from bot.keyboards import back_to_menu_keyboard
 
 
 def build_router(ctx: AppContext) -> Router:
@@ -12,6 +13,6 @@ def build_router(ctx: AppContext) -> Router:
 
     @router.message(Command("rules"), F.chat.type == "private")
     async def rules_cmd(message: Message) -> None:
-        await message.answer(ctx.rules_text)
+        await message.answer(ctx.rules_text, reply_markup=back_to_menu_keyboard())
 
     return router
