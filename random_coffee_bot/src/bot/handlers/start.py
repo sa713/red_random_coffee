@@ -28,7 +28,7 @@ def build_router(ctx: AppContext) -> Router:
 
         offices = ctx.draw_service.get_runtime_offices()
         await callback.message.answer(
-            "Выбери офис:",
+            "Выбери, в каком офисе встретиться за чашкой кофе",
             reply_markup=offices_keyboard(offices, prefix="regoffice"),
         )
         await callback.answer()
@@ -60,7 +60,10 @@ def build_router(ctx: AppContext) -> Router:
 
         ctx.repo.upsert_user(user.id, user.username, office, is_active=True)
         await callback.message.answer(
-            f"Готово. Ты участвуешь от офиса {office}.",
+            (
+                f"Готово! Раз в неделю буду присылать тебе контакты коллег из {office}.\n"
+                "Если захочешь сделать паузу, укажи это в Главном меню."
+            ),
             reply_markup=back_to_menu_keyboard(),
         )
         await callback.answer()

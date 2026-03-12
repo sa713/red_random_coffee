@@ -368,3 +368,55 @@ class Repository:
     def cleanup_old_backups_marker(self) -> None:
         # Резерв для будущих расширений; БД-метки бэкапа не требуются.
         return
+
+    def get_done_round_number(self, round_id: int) -> int:
+        with self.db.connect() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) AS c FROM rounds WHERE status='done' AND id<=?",
+                (round_id,),
+            ).fetchone()
+        return int(row["c"] if row else 0)
+
+    def get_round_participants_count(self, round_id: int) -> int:
+        with self.db.connect() as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(DISTINCT user_id) AS c
+                FROM (
+                    SELECT user_a AS user_id FROM pair_history WHERE round_id=?
+                    UNION
+                    SELECT user_b AS user_id FROM pair_history WHERE round_id=?
+                    UNION
+                    SELECT user_id AS user_id FROM skipped_history WHERE round_id=?
+                )
+                """,
+                (round_id, round_id, round_id),
+            ).fetchone()
+        return int(row["c"] if row else 0)
+
+    def get_top_users_by_unique_partners(self, limit: int = 3) -> list[tuple[int, str, int]]:
+        with self.db.connect() as conn:
+            rows = conn.execute(
+                """
+                WITH pairs AS (
+                    SELECT user_a AS user_id, user_b AS partner_id FROM pair_history
+                    UNION ALL
+                    SELECT user_b AS user_id, user_a AS partner_id FROM pair_history
+                ),
+                agg AS (
+                    SELECT user_id, COUNT(DISTINCT partner_id) AS uniq_cnt
+                    FROM pairs
+                    GROUP BY user_id
+                )
+                SELECT
+                    a.user_id AS user_id,
+                    COALESCE(u.username, '') AS username,
+                    a.uniq_cnt AS uniq_cnt
+                FROM agg a
+                LEFT JOIN users u ON u.user_id = a.user_id
+                ORDER BY a.uniq_cnt DESC, a.user_id ASC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        return [(int(r["user_id"]), str(r["username"]), int(r["uniq_cnt"])) for r in rows]

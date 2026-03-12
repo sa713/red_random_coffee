@@ -23,8 +23,8 @@ def offices_keyboard(offices: list[str], prefix: str, with_menu: bool = False) -
 def ready_keyboard(round_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Я участвую ✅", callback_data=f"ready:{round_id}")],
-            [InlineKeyboardButton(text="Не в этот раз", callback_data=f"ready_skip:{round_id}")],
+            [InlineKeyboardButton(text="Да, участвую", callback_data=f"ready:{round_id}")],
+            [InlineKeyboardButton(text="Нет, пропущу", callback_data=f"ready_skip:{round_id}")],
             [InlineKeyboardButton(text="В меню", callback_data="menu:open")],
         ]
     )

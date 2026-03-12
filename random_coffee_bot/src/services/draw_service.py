@@ -103,6 +103,7 @@ class DrawService:
                 try:
                     await self._run_draw_round(bot, round_rec.id, round_rec.draw_at)
                     self.repo.mark_round_done(round_rec.id)
+                    await self._send_admin_summary(bot, round_rec.id, round_rec.draw_at)
                 except Exception:
                     logger.exception("Ошибка draw round_id=%s", round_rec.id)
                     raise
@@ -170,3 +171,37 @@ class DrawService:
         except Exception as exc:
             logger.exception("send_message error user_id=%s type=%s", user_id, msg_type)
             self.repo.log_message(user_id, round_id, msg_type, "error", str(exc))
+
+    async def _send_admin_summary(self, bot: Bot, round_id: int, draw_at: datetime) -> None:
+        if not self.settings.admin_ids:
+            return
+
+        round_number = self.repo.get_done_round_number(round_id)
+        participants_count = self.repo.get_round_participants_count(round_id)
+        top_users = self.repo.get_top_users_by_unique_partners(limit=3)
+        date_text = draw_at.astimezone(self.settings.tzinfo).strftime("%d.%m.%Y")
+
+        lines = [
+            "Итоги жеребьёвки Random Coffee:",
+            f"Дата: {date_text}",
+            f"Номер раунда: {round_number}",
+            f"Участников в раунде: {participants_count}",
+            "Топ-3 по количеству уникальных пар:",
+        ]
+
+        if top_users:
+            for index, (user_id, username, uniq_cnt) in enumerate(top_users, start=1):
+                label = f"@{username}" if username and not username.startswith("user_") else f"id {user_id}"
+                lines.append(f"{index}. {label} — {uniq_cnt}")
+        else:
+            lines.append("Пока нет данных по сформированным парам.")
+
+        text = "\n".join(lines)
+        for admin_id in self.settings.admin_ids:
+            await self._safe_send(
+                bot=bot,
+                user_id=admin_id,
+                text=text,
+                round_id=round_id,
+                msg_type="admin_round_stats",
+            )
