@@ -6,11 +6,13 @@ from pathlib import Path
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.types import ErrorEvent
 
 from bot.context import AppContext
 from bot.handlers import admin, profile, readiness, rules, start
+from bot.proxy_runtime import get_proxy_enabled
 from config.logging_config import setup_logging
 from config.settings import load_settings
 from db.connection import Database
@@ -44,7 +46,16 @@ async def main() -> None:
     draw_service = DrawService(repo, settings)
     ctx = AppContext(settings=settings, repo=repo, draw_service=draw_service, rules_text=rules_text)
 
-    bot = Bot(token=settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    session = None
+    if get_proxy_enabled(settings, repo):
+        session = AiohttpSession(proxy=settings.telegram_proxy_url)
+        logger.info("Telegram proxy включен.")
+
+    bot = Bot(
+        token=settings.bot_token,
+        session=session,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
     dp = Dispatcher()
 
     dp.include_router(start.build_router(ctx))

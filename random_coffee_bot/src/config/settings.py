@@ -22,6 +22,7 @@ class Settings:
     offices: list[str]
     calendar_suggestion_mode: str
     lock_path: Path
+    telegram_proxy_url: str | None
 
     @property
     def tzinfo(self) -> ZoneInfo:
@@ -64,6 +65,7 @@ def load_settings() -> Settings:
     db_path = Path(os.getenv("DB_PATH", "./data/random_coffee.sqlite")).expanduser()
     backup_dir = Path(os.getenv("BACKUP_DIR", "./data/backups")).expanduser()
     lock_path = Path(os.getenv("LOCK_PATH", "/tmp/random_coffee_draw.lock")).expanduser()
+    telegram_proxy_url = os.getenv("TELEGRAM_PROXY_URL", "").strip() or None
 
     return Settings(
         bot_token=bot_token,
@@ -78,4 +80,5 @@ def load_settings() -> Settings:
         offices=offices,
         calendar_suggestion_mode=calendar_mode,
         lock_path=lock_path,
+        telegram_proxy_url=telegram_proxy_url,
     )

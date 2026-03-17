@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.context import AppContext
+from bot.proxy_runtime import PROXY_SETTING_KEY, apply_proxy_mode, get_proxy_enabled, proxy_status_line
 from scheduler.cron_utils import normalize_cron
 
 
@@ -15,6 +16,9 @@ HELP_TEXT = """/admin help
 /admin offices set <MSK,SPB,...>
 /admin users add <user_id> <office>
 /admin users remove <user_id>
+/admin proxy status
+/admin proxy on
+/admin proxy off
 /admin stats"""
 
 
@@ -129,6 +133,30 @@ def build_router(ctx: AppContext) -> Router:
                     ]
                 )
             )
+            return
+
+        if parts[1] == "proxy":
+            action = parts[2].lower() if len(parts) >= 3 else "status"
+            if action == "status":
+                await message.answer(proxy_status_line(ctx.settings, ctx.repo))
+                return
+            if action not in {"on", "off"}:
+                await message.answer("Используй: /admin proxy status|on|off")
+                return
+
+            enabled = action == "on"
+            ctx.repo.set_setting(PROXY_SETTING_KEY, "1" if enabled else "0")
+
+            if enabled and not ctx.settings.telegram_proxy_url:
+                await message.answer(
+                    "Режим сохранён как ON, но TELEGRAM_PROXY_URL не задан в .env.\n"
+                    "Добавь URL прокси и перезапусти сервис."
+                )
+                return
+
+            ok, details = await apply_proxy_mode(message.bot, ctx.settings, enabled)
+            mode_text = "включен" if get_proxy_enabled(ctx.settings, ctx.repo) else "выключен"
+            await message.answer(f"Прокси режим: {mode_text}.\n{details}")
             return
 
         await message.answer("Неизвестная админ-команда. Используй /admin help")

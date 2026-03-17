@@ -66,6 +66,8 @@ random_coffee_bot/
 - `OFFICES` — список офисов через запятую, например `MSK,SPB,KZN`.
 - `CALENDAR_SUGGESTION_MODE` — `none` или `default`.
 - `LOCK_PATH` — путь к lock-файлу.
+- `TELEGRAM_PROXY_URL` — опционально, прокси для доступа к Telegram Bot API (`socks5://...` или `http://...`).
+  Режим использования прокси (on/off) переключается админ-командой `/admin proxy ...` и хранится в БД.
 
 См. пример: `.env.example`.
 
@@ -106,6 +108,9 @@ random_coffee_bot/
 - `/admin offices set <comma-separated>`
 - `/admin users add <user_id> <office>`
 - `/admin users remove <user_id>`
+- `/admin proxy status`
+- `/admin proxy on`
+- `/admin proxy off`
 - `/admin stats`
 
 `/admin schedule set` и `/admin offices set` пишут значения в таблицу `settings` и перекрывают `.env` в рантайме.
@@ -187,6 +192,11 @@ cp .env.example .env
 - `BACKUP_DIR=/opt/random_coffee/backups`
 - `TIMEZONE`, `DRAW_CRON`, `OFFICES`
 
+Если Telegram нестабильно доступен из региона хостинга, добавь:
+- `TELEGRAM_PROXY_URL=socks5://...` или `TELEGRAM_PROXY_URL=http://...`
+
+Важно: ссылка формата `https://t.me/proxy?...` (MTProto) не подставляется в `TELEGRAM_PROXY_URL` напрямую. Для Python-бота нужен endpoint HTTP/SOCKS5 прокси.
+
 6. Проверь запуск вручную:
 ```bash
 source .venv/bin/activate
@@ -248,6 +258,7 @@ journalctl -u random-coffee -f
 - `/admin schedule` смотрит текущее расписание.
 - `/admin schedule set ...` обновляет расписание без правки `.env`.
 - `/admin offices set ...` меняет список офисов.
+- `/admin proxy status|on|off` включает/выключает использование прокси для Telegram API.
 - `/admin stats` показывает агрегированную статистику.
 
 ## Миграции
